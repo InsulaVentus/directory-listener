@@ -3,10 +3,8 @@ import java.nio.file._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
-import runnable.Listener
 
 import scala.collection.JavaConverters._
-import scala.concurrent.Future
 
 /**
   * https://twitter.github.io/scala_school/concurrency.html
@@ -35,7 +33,7 @@ import scala.concurrent.Future
 @RunWith(classOf[JUnitRunner])
 class ListenerTest extends FunSuite with Matchers {
 
-  test("testing") {
+  ignore("testing") {
 
     val parent = Files.createDirectory(Paths.get("tmpDir"))
 

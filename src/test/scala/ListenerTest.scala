@@ -6,6 +6,7 @@ import org.scalatest.{FunSuite, Matchers}
 import runnable.Listener
 
 import scala.collection.JavaConverters._
+import scala.concurrent.Future
 
 /**
   * https://twitter.github.io/scala_school/concurrency.html
@@ -64,9 +65,10 @@ class ListenerTest extends FunSuite with Matchers {
       StandardWatchEventKinds.ENTRY_DELETE
     ))
 
-    //    val future: Future[Any] = Future {
-    //      Listener.listen(ListenerTest.eventHandler, watchService, continueListening = true)
-    //    }
+
+//        val future: Future[Any] = Future {
+//          Listener.listen(ListenerTest.eventHandler, watchService, continueListening = true)
+//        }
 
 
 //    val listeningThread: Thread = new Thread(new Listener(parent, ListenerTest.eventHandler, watchService, continueListening = true))

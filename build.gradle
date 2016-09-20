@@ -1,17 +1,16 @@
 apply plugin: 'scala'
 
 repositories {
-    mavenCentral()
+//    mavenCentral()
     mavenLocal()
-//    maven { url 'http://midasmavenrepo.ccd1.root4.net/nexus/content/groups/public' }
-//    maven { url 'http://midasmavenrepo.ccd1.root4.net/nexus/content/groups/netbank-norway-repositories' }
-//    maven { url 'http://midasmavenrepo.ccd1.root4.net/nexus/content/repositories/netbank-norway-releases' }
+    maven { url 'http://midasmavenrepo.ccd1.root4.net/nexus/content/groups/public' }
+    maven { url 'http://midasmavenrepo.ccd1.root4.net/nexus/content/groups/netbank-norway-repositories' }
+    maven { url 'http://midasmavenrepo.ccd1.root4.net/nexus/content/repositories/netbank-norway-releases' }
 }
 
 dependencies {
     compile 'org.scala-lang:scala-library:2.11.7'
 
     testCompile 'junit:junit:4.12'
-    testCompile 'org.scalatest:scalatest_2.11:2.2.5'
-    testRuntime 'org.scala-lang.modules:scala-xml_2.11:1.0.5'
+    testCompile 'org.scalatest:scalatest_2.11:3.0.0-M16-SNAP6'
 }

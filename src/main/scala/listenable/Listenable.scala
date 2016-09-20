@@ -1,11 +1,14 @@
 package listenable
 
-import java.nio.file.WatchKey
+import java.nio.file.{Path, WatchKey}
 
+abstract class Listenable(directory: Path) {
 
-trait Listenable {
-
-  def getName: String
+  def getName: String = {
+    directory.getFileName.toString
+  }
 
   def notify(watchKey: WatchKey): Unit
+
+  def get(): WatchKey
 }

@@ -1,5 +1,6 @@
 package listenable
 
+import java.nio.file.WatchEvent.Kind
 import java.nio.file._
 import java.util.concurrent.{ExecutorService, Executors, Future}
 
@@ -13,21 +14,13 @@ import scala.collection.mutable
 /**
   * A 'watched' directory.
   */
-class Component(directory: Path, watchService: WatchService) extends Listenable {
+class Component(directory: Path, watchService: WatchService, var log: Log) extends Listenable(directory) {
 
   val DivingCourse: mutable.Stack[String] = mutable.Stack("logs", "audit")
 
   val TenSeconds: Long = 10000000000L
 
-  override def getName: String = {
-    directory.getFileName.toString
-  }
-
   override def notify(watchKey: WatchKey): Unit = {
-    //    val watchedPath: Path = watchKey.watchable().asInstanceOf[Path]
-    //    println(s"Watching: ${watchedPath.toAbsolutePath}")
-    //    watchKey.cancel()
-
     watchKey.pollEvents().asScala.foreach { event =>
       val context = directory.resolve(event.context().asInstanceOf[Path])
 
@@ -35,35 +28,33 @@ class Component(directory: Path, watchService: WatchService) extends Listenable 
 
       kind match {
         case StandardWatchEventKinds.ENTRY_CREATE =>
-          if (Files.isDirectory(context) && isValidDirectoryName(context.getFileName.toString)) {
-            println("A directory with a valid name was created")
+          val maybeLog: Option[Path] = findLog(context)
+          if (maybeLog.isDefined) {
+            log.stopListening()
+            val replacementLog: Log = Log(maybeLog.get, FileSystems.getDefault.newWatchService())
+            log = replacementLog
+            new Thread(Listener(replacementLog, continueListening = true), "listen-to-the-deep").start()
 
-            val jacquesCousteau: Diver = new Diver(context, DivingCourse.clone(), System.nanoTime(), TenSeconds)
-            val singleThreadExecutor: ExecutorService = Executors.newSingleThreadExecutor()
-            val bottomReached: Future[Option[Path]] = singleThreadExecutor.submit(jacquesCousteau)
-            val maybeBottom: Option[Path] = bottomReached.get()
-
-            if (maybeBottom.isDefined) {
-
-              //Find current version - and stop listening to it
-
-              val bottom: Path = maybeBottom.get
-              val bottomWatchService: WatchService = FileSystems.getDefault.newWatchService()
-              bottom.register(
-                bottomWatchService,
-                StandardWatchEventKinds.ENTRY_CREATE,
-                StandardWatchEventKinds.ENTRY_MODIFY,
-                StandardWatchEventKinds.ENTRY_DELETE
-              )
-              val bottomThread: Thread = new Thread(new Listener(new Log(bottom, bottomWatchService), bottomWatchService, continueListening = true), "listen-to-the-deep")
-              bottomThread.start()
-            }
           }
         case StandardWatchEventKinds.ENTRY_MODIFY => println("component modify")
         case _ => println("component delete")
       }
     }
   }
+
+  def findLog(directory: Path): Option[Path] = {
+    if (Files.isDirectory(directory) && isValidDirectoryName(directory.getFileName.toString)) {
+      println("A directory with a valid name was created")
+
+      val jacquesCousteau: Diver = new Diver(directory, DivingCourse.clone(), System.nanoTime(), TenSeconds)
+      val singleThreadExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+      val bottomReached: Future[Option[Path]] = singleThreadExecutor.submit(jacquesCousteau)
+      return bottomReached.get()
+    }
+    None
+  }
+
+  override def get(): WatchKey = watchService.take()
 }
 
 object Component {
@@ -71,7 +62,18 @@ object Component {
   //One or more digits followed by one or more occurrences of: '.' followed by one or more digits.
   val ComponentVersion = "^(\\d)+(\\.\\d+)+$".r
 
+  val CreateModifyDelete: Array[Kind[_]] = Array(
+    StandardWatchEventKinds.ENTRY_CREATE,
+    StandardWatchEventKinds.ENTRY_MODIFY,
+    StandardWatchEventKinds.ENTRY_DELETE
+  )
+
   def isValidDirectoryName(directory: String): Boolean = {
     ComponentVersion.pattern.matcher(directory).matches()
+  }
+
+  def apply(directory: Path, watchService: WatchService, log: Log): Component = {
+    directory.register(watchService, CreateModifyDelete)
+    new Component(directory, watchService, log)
   }
 }

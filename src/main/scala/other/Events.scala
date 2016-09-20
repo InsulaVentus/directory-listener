@@ -4,8 +4,13 @@ import java.util.concurrent.ConcurrentLinkedQueue
 
 object Events {
 
-  var queue: ConcurrentLinkedQueue[String] = new ConcurrentLinkedQueue[String]()
+  val queue: ConcurrentLinkedQueue[String] = new ConcurrentLinkedQueue[String]()
 
-  //  var eventQueue: mutable.Syn[String] = mutable.Queue[String]()
+  def add(event: String) = {
+    queue.add(event)
+  }
 
+  def poll(): Option[String] = {
+    Option(queue.poll())
+  }
 }

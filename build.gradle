@@ -1,11 +1,11 @@
 apply plugin: 'scala'
 
 repositories {
-//    mavenCentral()
+    mavenCentral()
     mavenLocal()
-    maven { url 'http://midasmavenrepo.ccd1.root4.net/nexus/content/groups/public' }
-    maven { url 'http://midasmavenrepo.ccd1.root4.net/nexus/content/groups/netbank-norway-repositories' }
-    maven { url 'http://midasmavenrepo.ccd1.root4.net/nexus/content/repositories/netbank-norway-releases' }
+//    maven { url 'http://midasmavenrepo.ccd1.root4.net/nexus/content/groups/public' }
+//    maven { url 'http://midasmavenrepo.ccd1.root4.net/nexus/content/groups/netbank-norway-repositories' }
+//    maven { url 'http://midasmavenrepo.ccd1.root4.net/nexus/content/repositories/netbank-norway-releases' }
 }
 
 dependencies {

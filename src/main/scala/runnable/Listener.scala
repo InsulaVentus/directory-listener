@@ -1,25 +1,27 @@
 package runnable
 
-import java.nio.file.{Path, WatchService, WatchKey}
+import java.nio.file.{WatchKey, WatchService}
+
+import listenable.Listenable
 
 import scala.annotation.tailrec
 
 /**
   * Listen for changes
   */
-class Listener(listenTo: Path, callbackOnEvent: (Path, WatchKey, WatchService) => Unit, watchService: WatchService, continueListening: Boolean) extends Runnable {
+class Listener(listenTo: Listenable, watchService: WatchService, continueListening: Boolean) extends Runnable {
 
   override def run() = {
-    listen(listenTo, callbackOnEvent, watchService, continueListening)
+    listen(listenTo, watchService, continueListening)
   }
 
   @tailrec
-  private def listen(listenTo: Path, callbackOnEvent: (Path, WatchKey, WatchService) => Unit, watchService: WatchService, continueListening: Boolean): Unit = {
+  private def listen(listenTo: Listenable, watchService: WatchService, continueListening: Boolean): Unit = {
     if (continueListening) {
-      println(s"Thread '${Thread.currentThread().getName}' is listening to ${listenTo.getFileName.toString}")
+      println(s"Thread '${Thread.currentThread().getName}' is listening to ${listenTo.getName}")
       val watchKey: WatchKey = watchService.take()
-      callbackOnEvent(listenTo, watchKey, watchService)
-      listen(listenTo, callbackOnEvent, watchService, watchKey.reset())
+      listenTo.notify(watchKey)
+      listen(listenTo, watchService, watchKey.reset())
     }
   }
 }

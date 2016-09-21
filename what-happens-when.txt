@@ -1,0 +1,21 @@
+What happens when -
+
+- there are events between 'watchService.take() + watchKey.pollEvents()' and 'watchService.take()'?
+
+
+WatchKey
+- Has two states; 'ready' and 'signalled'
+- Starts off by being 'ready'
+- Has a queue of events
+- When an event is detected the key becomes 'signalled' and the event is queued. The key then becomes queued with the WatchService
+- Incoming events while in 'signalled' state will also be queued. But the key will not be "re queued" with the WatchService
+- Remains in 'signalled' state until its 'reset' method is called
+- 'pollEvents' fetches all events from the queue
+
+- What happens with incoming events between 'WatchService.take' and 'WatchKey.reset'. That is; when the key is 'signalled', but not queued with the WatchService?
++ They will be queued with the key. And when 'WatchKey.reset' is called, the key is set back to 'ready'.
+
+
+
+watchKey.pollEvents():
+Retrieves and removes all pending events for this watch key, returning a List of the events that were retrieved.

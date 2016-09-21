@@ -2,13 +2,15 @@ package listenable
 
 import java.nio.file.{Path, WatchKey}
 
-abstract class Listenable(directory: Path) {
+import scala.util.Try
+
+abstract case class Listenable(directory: Path) {
 
   def getName: String = {
-    directory.getFileName.toString
+    directory.toAbsolutePath.toString
   }
 
   def notify(watchKey: WatchKey): Unit
 
-  def get(): WatchKey
+  def get(): Try[WatchKey]
 }

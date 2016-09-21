@@ -6,10 +6,12 @@ import java.util.concurrent.{ExecutorService, Executors, Future}
 
 import callable.Diver
 import listenable.Component.isValidDirectoryName
+import other.Events.queue
 import runnable.Listener
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
+import scala.util.Try
 
 /**
   * A 'watched' directory.
@@ -31,7 +33,7 @@ class Component(directory: Path, watchService: WatchService, var log: Log) exten
           val maybeLog: Option[Path] = findLog(context)
           if (maybeLog.isDefined) {
             log.stopListening()
-            val replacementLog: Log = Log(maybeLog.get, FileSystems.getDefault.newWatchService())
+            val replacementLog: Log = Log(maybeLog.get, FileSystems.getDefault.newWatchService(), queue)
             log = replacementLog
             new Thread(Listener(replacementLog, continueListening = true), "listen-to-the-deep").start()
 
@@ -54,7 +56,7 @@ class Component(directory: Path, watchService: WatchService, var log: Log) exten
     None
   }
 
-  override def get(): WatchKey = watchService.take()
+  override def get(): Try[WatchKey] = Try(watchService.take())
 }
 
 object Component {

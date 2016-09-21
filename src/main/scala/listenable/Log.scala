@@ -2,15 +2,15 @@ package listenable
 
 import java.nio.file.WatchEvent.Kind
 import java.nio.file.{Path, StandardWatchEventKinds, WatchKey, WatchService}
-
-import other.Events
+import java.util
 
 import scala.collection.JavaConverters._
+import scala.util.Try
 
-class Log(directory: Path, watchService: WatchService) extends Listenable(directory) {
+class Log(directory: Path, watchService: WatchService, queue: util.Queue[String]) extends Listenable(directory) {
 
   override def notify(watchKey: WatchKey): Unit = {
-    println(s"Queue size = ${Events.queue.size()}")
+    println(s"Queue size = ${queue.size()}")
 
     watchKey.pollEvents().asScala.foreach { event =>
       val context = directory.resolve(event.context().asInstanceOf[Path])
@@ -20,22 +20,22 @@ class Log(directory: Path, watchService: WatchService) extends Listenable(direct
       kind match {
         case StandardWatchEventKinds.ENTRY_CREATE =>
           println(s"log handler create $context")
-          Events.queue.add(s"log handler create $context")
+          queue.offer(s"log handler create $context")
 
         case StandardWatchEventKinds.ENTRY_MODIFY =>
           println(s"log handler modify $context")
-          Events.queue.add(s"log handler modify $context")
+          queue.offer(s"log handler modify $context")
 
         case _ =>
           println(s"log handler delete $context")
-          Events.queue.add(s"log handler delete $context")
+          queue.offer(s"log handler delete $context")
       }
     }
   }
 
-  def stopListening() = watchService.close() //TODO: When calling this the Listener listening to this will throw a java.nio.file.ClosedWatchServiceException
+  def stopListening() = watchService.close()
 
-  override def get(): WatchKey = watchService.take()
+  override def get(): Try[WatchKey] = Try(watchService.take())
 }
 
 object Log {
@@ -46,8 +46,8 @@ object Log {
     StandardWatchEventKinds.ENTRY_DELETE
   )
 
-  def apply(directory: Path, watchService: WatchService): Log = {
+  def apply(directory: Path, watchService: WatchService, queue: util.Queue[String]): Log = {
     directory.register(watchService, CreateModifyDelete)
-    new Log(directory, watchService)
+    new Log(directory, watchService, queue)
   }
 }

@@ -1,31 +1,34 @@
 package runnable
 
-import java.nio.file.WatchKey
-
 import listenable.Listenable
 
 import scala.annotation.tailrec
+import scala.util.Success
 
 /**
   * Listen for changes
   */
-class Listener(listenTo: Listenable, continueListening: Boolean) extends Runnable {
+class Listener(listenable: Listenable, continueListening: Boolean) extends Runnable {
 
   override def run() = {
-    listen(listenTo, continueListening)
+    listen(listenable, continueListening)
   }
 
   @tailrec
-  private def listen(listenTo: Listenable, continueListening: Boolean): Unit = {
+  private def listen(listenable: Listenable, continueListening: Boolean): Unit = {
     if (continueListening) {
-      println(s"Thread '${Thread.currentThread().getName}' is listening to ${listenTo.getName}")
-      val watchKey: WatchKey = listenTo.get() //TODO: Handle java.nio.file.ClosedWatchServiceException
-      listenTo.notify(watchKey)
-      listen(listenTo, watchKey.reset())
+      println(s"Thread '${Thread.currentThread().getName}' is listening to ${listenable.getName}")
+      listenable.get() match {
+        case Success(s) =>
+          listenable.notify(s)
+          listen(listenable, s.reset())
+        case _ =>
+          println(s"Thread '${Thread.currentThread().getName}' will no longer listen to ${listenable.getName}")
+      }
     }
   }
 }
 
 object Listener {
-  def apply(listenTo: Listenable, continueListening: Boolean): Listener = new Listener(listenTo, continueListening)
+  def apply(listenable: Listenable, continueListening: Boolean): Listener = new Listener(listenable, continueListening)
 }

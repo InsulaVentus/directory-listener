@@ -1,3 +1,5 @@
+package runnable
+
 import java.nio.file._
 
 import org.junit.runner.RunWith
@@ -65,11 +67,11 @@ class ListenerTest extends FunSuite with Matchers {
 
 
 //        val future: Future[Any] = Future {
-//          Listener.listen(ListenerTest.eventHandler, watchService, continueListening = true)
+    //          Listener.listen(runnable.ListenerTest.eventHandler, watchService, continueListening = true)
 //        }
 
 
-//    val listeningThread: Thread = new Thread(new Listener(parent, ListenerTest.eventHandler, watchService, continueListening = true))
+    //    val listeningThread: Thread = new Thread(new Listener(parent, runnable.ListenerTest.eventHandler, watchService, continueListening = true))
 //    listeningThread.start()
 
     println("Listening in progress")
